@@ -165,7 +165,42 @@ namespace RapidBootcamp.BackendAPI.DAL
         #region Get By Category ID
         public IEnumerable<Product> GetByCategoryId(int categoryId)
         {
-            throw new NotImplementedException();
+            try
+            {
+                string query = @"SELECT * FROM Products
+                                 WHERE CategoryId = @CategoryId";
+
+                _command = new SqlCommand(query, _connection);
+                _command.Parameters.AddWithValue("@CategoryId", categoryId);
+                _connection.Open();
+                _reader = _command.ExecuteReader();
+                List<Product> products = new List<Product>();
+                if (_reader.HasRows)
+                {
+                    while (_reader.Read())
+                    {
+                        products.Add(new Product
+                        {
+                            ProductId = Convert.ToInt32(_reader["ProductId"]),
+                            ProductName = _reader["ProductName"].ToString(),
+                            CategoryId = Convert.ToInt32(_reader["CategoryId"]),
+                            Stock = Convert.ToInt32(_reader["Stock"]),
+                            Price = Convert.ToDecimal(_reader["Price"]),
+                        });
+                    }
+                }
+                _reader.Close ();
+                return products;
+            }
+            catch (SqlException sqlEx)
+            {
+                throw new ArgumentException (sqlEx.Message);
+            }
+            finally
+            {
+                _connection.Close();
+                _command.Dispose();
+            }
         }
         #endregion
 
