@@ -87,11 +87,6 @@ namespace RapidBootcamp.BackendAPI.DAL
                     product.ProductName = _reader["ProductName"].ToString();
                     product.Stock = Convert.ToInt32(_reader["Stock"]);
                     product.Price = Convert.ToDecimal(_reader["Price"]);
-                    product.Category = new Category
-                    {
-                        CategoryId = Convert.ToInt32(_reader["CategoryId"]),
-                        CategoryName = (_reader["CategoryName"].ToString())
-                    };
                 }
                 else
                 {
@@ -122,9 +117,9 @@ namespace RapidBootcamp.BackendAPI.DAL
                                  p.ProductName, p.Stock, p.Price
                                  FROM Categories c INNER JOIN Products p 
                                  ON c.CategoryId = p.CategoryId
-                                 WHERE p.ProductName LIKE @p.ProductName";
+                                 WHERE p.ProductName LIKE @ProductName";
                 _command = new SqlCommand(query, _connection);
-                _command.Parameters.AddWithValue("p.ProductName", "%" + productName + "%");
+                _command.Parameters.AddWithValue("ProductName", "%" + productName + "%");
                 _connection.Open();
                 _reader = _command.ExecuteReader();
                 if (_reader.HasRows)
@@ -216,10 +211,10 @@ namespace RapidBootcamp.BackendAPI.DAL
                                  p.ProductName, p.Stock, p.Price
                                  FROM Categories c INNER JOIN Products p 
                                  ON c.CategoryId = p.CategoryId
-                                 WHERE c.CategoryName LIKE @c.CategoryName";
+                                 WHERE CategoryName LIKE @CategoryName";
 
                 _command = new SqlCommand(query, _connection);
-                _command.Parameters.AddWithValue("@c.CategoryName", "%" + categoryName + "%");
+                _command.Parameters.AddWithValue("@CategoryName", "%" + categoryName + "%");
                 _connection.Open();
                 _reader = _command.ExecuteReader();
                 if (_reader.HasRows)

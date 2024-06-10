@@ -49,7 +49,7 @@ namespace RapidBootcamp.BackendAPI.Controllers
 
         #region Get By Category ID
         // GET api/<ProductsController>/5
-        [HttpGet("ByCategory/{id}")]
+        [HttpGet("ByCategoryId/{categoryId}")]
         public IEnumerable<Product> GetByCategoryId(int categoryId)
         {
             var product = _product.GetByCategoryId(categoryId);
