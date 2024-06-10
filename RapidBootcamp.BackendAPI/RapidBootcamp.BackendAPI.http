@@ -1,0 +1,6 @@
+@RapidBootcamp.BackendAPI_HostAddress = http://localhost:5182
+
+GET {{RapidBootcamp.BackendAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

@@ -1,0 +1,65 @@
+﻿@model List<RapidBootcamp.WebApplication.Models.Customer>
+
+
+<html>
+<head>
+    <title>Home Page</title>
+</head>
+<body>
+    <h1>List Of Customers</h1>
+    <br />
+
+    <form action="/Customers" method="post">'
+        <label>Search Customer By Name</label>
+        <input type="type" name="CustomerName" placeholder="Search..." />
+        <button type="submit">Search</button>
+    </form>
+    <form action="/Customers" method="post">'
+        <label>Search Customer By City</label>
+        <input type="type" name="CustomerCity" placeholder="Search..." />
+        <button type="submit">Search</button>
+    </form>
+    <form action="/Customers" method="post">'
+        <label>Search Customer By Email</label>
+        <input type="type" name="CustomerEmail" placeholder="Search..." />
+        <button type="submit">Search</button>
+    </form>
+    <a href="/Customers/Create">Create New Customer</a>
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Address</th>
+            <th>City</th>
+            <th>Email</th>
+            <th>Phone Number</th>
+            <th>&nbsp;</th>
+            <th>&nbsp;</th>
+            <th>&nbsp;</th>
+        </tr>
+@*         @if (Model != null)
+        {
+ *@            @foreach (var customer in Model)
+            {
+                <tr>
+                    <td>@customer.CustomerId</td>
+                    <td>@customer.CustomerName</td>
+                    <td>@customer.CustomerAddress</td>
+                    <td>@customer.CustomerCity</td>
+                    <td>@customer.CustomerEmail</td>
+                    <td>@customer.CustomerPhoneNumber</td>
+                    <td><a href="/Customers/Details/@customer.CustomerId">Detail</a></td>
+                    <td><a href="/Customers/Edit/@customer.CustomerId">Edit</a></td>
+                    <td><a href="/Customers/Delete/@customer.CustomerId">Delete</a></td>
+                </tr>
+            }      
+@*         }
+        else
+        {
+            <tr>
+                <h2>Data not found!</h2>    
+            </tr>
+        } *@
+    </table>
+</body>
+</html>
