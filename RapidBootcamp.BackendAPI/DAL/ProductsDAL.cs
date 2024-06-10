@@ -118,10 +118,13 @@ namespace RapidBootcamp.BackendAPI.DAL
             try
             {
                 List<Product> products = new List<Product>();
-                string query = @"SELECT * FROM ViewProductCategory
-                                 WHERE ProductName LIKE @ProductName";
+                string query = @"SELECT p.ProductId, p.CategoryId, c.CategoryName, 
+                                 p.ProductName, p.Stock, p.Price
+                                 FROM Categories c INNER JOIN Products p 
+                                 ON c.CategoryId = p.CategoryId
+                                 WHERE p.ProductName LIKE @p.ProductName";
                 _command = new SqlCommand(query, _connection);
-                _command.Parameters.AddWithValue("@ProductName", "%" + productName + "%");
+                _command.Parameters.AddWithValue("p.ProductName", "%" + productName + "%");
                 _connection.Open();
                 _reader = _command.ExecuteReader();
                 if (_reader.HasRows)
@@ -132,20 +135,19 @@ namespace RapidBootcamp.BackendAPI.DAL
                         {
                             ProductId = Convert.ToInt32(_reader["ProductId"]),
                             CategoryId = Convert.ToInt32(_reader["CategoryId"]),
+                            Category = new Category
+                            {
+                                CategoryName = (_reader["CategoryName"].ToString())
+                            },
                             ProductName = _reader["ProductName"].ToString(),
                             Stock = Convert.ToInt32(_reader["Stock"]),
                             Price = Convert.ToDecimal(_reader["Price"]),
-                            Category = new Category
-                            {
-                                CategoryId = Convert.ToInt32(_reader["CategoryId"]),
-                                CategoryName = (_reader["CategoryName"].ToString())
-                            }
                         });
                     }
                 }
                 else
                 {
-                    throw new ArgumentException($"{productName}");
+                    throw new ArgumentException($"Data Product {productName} tidak ditemukan!");
                 }
                 _reader.Close();
                 return products;
@@ -207,7 +209,53 @@ namespace RapidBootcamp.BackendAPI.DAL
         #region Get By Category Name
         public IEnumerable<Product> GetByCategoryName(string categoryName)
         {
-            throw new NotImplementedException();
+            try
+            {
+                List<Product> products = new List<Product>();
+                string query = @"SELECT p.ProductId, p.CategoryId, c.CategoryName, 
+                                 p.ProductName, p.Stock, p.Price
+                                 FROM Categories c INNER JOIN Products p 
+                                 ON c.CategoryId = p.CategoryId
+                                 WHERE c.CategoryName LIKE @c.CategoryName";
+
+                _command = new SqlCommand(query, _connection);
+                _command.Parameters.AddWithValue("@c.CategoryName", "%" + categoryName + "%");
+                _connection.Open();
+                _reader = _command.ExecuteReader();
+                if (_reader.HasRows)
+                {
+                    while (_reader.Read())
+                    {
+                        products.Add(new Product
+                        {
+                            ProductId = Convert.ToInt32(_reader["ProductId"]),
+                            CategoryId = Convert.ToInt32(_reader["CategoryId"]),
+                            Category = new Category
+                            {
+                                CategoryName = (_reader["CategoryName"].ToString())
+                            },
+                            ProductName = _reader["ProductName"].ToString(),
+                            Stock = Convert.ToInt32(_reader["Stock"]),
+                            Price = Convert.ToDecimal(_reader["Price"]),
+                        });
+                    }
+                }
+                else
+                {
+                    throw new ArgumentException($"Data Category {categoryName} tidak ditemukan!");
+                }
+                _reader.Close();
+                return products;
+            }
+            catch (SqlException sqlEx)
+            {
+                throw new ArgumentException(sqlEx.Message);
+            }
+            finally
+            {
+                _command.Dispose();
+                _connection.Close();
+            }
         }
         #endregion
 
