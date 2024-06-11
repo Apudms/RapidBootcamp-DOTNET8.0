@@ -13,6 +13,7 @@ builder.Services.AddSwaggerGen();
 // Add DI
 builder.Services.AddScoped<ICategory, CategoriesDAL>();
 builder.Services.AddScoped<IProduct, ProductsDAL>();
+builder.Services.AddScoped<IOrderHeader, OrderHeadersDAL>();
 
 var app = builder.Build();
 

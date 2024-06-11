@@ -48,7 +48,7 @@ namespace RapidBootcamp.BackendAPI.DAL
                 }
                 else
                 {
-                    throw new ArgumentException("Dara produk kosong");
+                    throw new ArgumentException("Data produk kosong");
                 }
 
                 _reader.Close();
@@ -90,7 +90,7 @@ namespace RapidBootcamp.BackendAPI.DAL
                 }
                 else
                 {
-                    throw new ArgumentException($"{id}");
+                    throw new ArgumentException($"Product dengan ID: {id} tidak ditemukan!");
                 }
                 _reader.Close();
                 return product;
