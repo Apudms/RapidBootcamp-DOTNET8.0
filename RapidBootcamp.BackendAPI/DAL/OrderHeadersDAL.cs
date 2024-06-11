@@ -55,6 +55,7 @@ namespace RapidBootcamp.BackendAPI.DAL
             try
             {
                 List<OrderHeader> orderHeaders = new List<OrderHeader>();
+                // Data Customer dibuat lengkap dari View DB
                 string query = @"SELECT * FROM View_OrderHeader 
                                  ORDER BY OrderHeaderId DESC";
 
