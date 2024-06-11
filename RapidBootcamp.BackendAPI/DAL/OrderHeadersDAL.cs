@@ -105,41 +105,43 @@ namespace RapidBootcamp.BackendAPI.DAL
 
         public OrderHeader GetById(int id)
         {
-            try
-            {
-                OrderHeader orderHeader = new OrderHeader();
-                string query = @"SELECT * FROM OrderHeaders
-                                 WHERE OrderHeaderId = @OrderHeaderId
-                                 ORDER BY OrderHeaderId ASC";
+            //try
+            //{
+            //    OrderHeader orderHeader = new OrderHeader();
+            //    string query = @"SELECT * FROM OrderHeaders
+            //                     WHERE OrderHeaderId = @OrderHeaderId
+            //                     ORDER BY OrderHeaderId ASC";
 
-                _command = new SqlCommand(query, _connection);
-                _command.Parameters.AddWithValue("@OrderHeaderId", id);
-                _connection.Open();
-                _reader = _command.ExecuteReader();
-                if (_reader.HasRows)
-                {
-                    _reader.Read();
-                    orderHeader.OrderHeaderId = _reader["OrderHeaderId"].ToString();
-                    orderHeader.CustomerId = Convert.ToInt32(_reader["CustomerId"]);
-                    orderHeader.ShippingId = Convert.ToInt32(_reader["ShippingId"]);
-                    orderHeader.OrderDate = Convert.ToDateTime(_reader["OrderDate"]);
-                }
-                else
-                {
-                    throw new ArgumentException($"Order Header dengan ID: {id} tidak ditemukan!");
-                }
-                _reader.Close();
-                return orderHeader;
-            }
-            catch (SqlException sqlEx)
-            {
-                throw new ArgumentException(sqlEx.Message);
-            }
-            finally
-            {
-                _command.Dispose();
-                _connection.Dispose();
-            }
+            //    _command = new SqlCommand(query, _connection);
+            //    _command.Parameters.AddWithValue("@OrderHeaderId", id);
+            //    _connection.Open();
+            //    _reader = _command.ExecuteReader();
+            //    if (_reader.HasRows)
+            //    {
+            //        _reader.Read();
+            //        orderHeader.OrderHeaderId = _reader["OrderHeaderId"].ToString();
+            //        orderHeader.CustomerId = Convert.ToInt32(_reader["CustomerId"]);
+            //        orderHeader.ShippingId = Convert.ToInt32(_reader["ShippingId"]);
+            //        orderHeader.OrderDate = Convert.ToDateTime(_reader["OrderDate"]);
+            //    }
+            //    else
+            //    {
+            //        throw new ArgumentException($"Order Header dengan ID: {id} tidak ditemukan!");
+            //    }
+            //    _reader.Close();
+            //    return orderHeader;
+            //}
+            //catch (SqlException sqlEx)
+            //{
+            //    throw new ArgumentException(sqlEx.Message);
+            //}
+            //finally
+            //{
+            //    _command.Dispose();
+            //    _connection.Dispose();
+            //}
+
+            throw new NotImplementedException();
         }
 
         public string GetOrderLastHeaderId()
