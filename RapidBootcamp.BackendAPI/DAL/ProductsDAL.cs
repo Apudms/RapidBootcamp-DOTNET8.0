@@ -394,5 +394,13 @@ namespace RapidBootcamp.BackendAPI.DAL
             }
         }
         #endregion
+
+        public int GetProductStock(int productId)
+        {
+            try
+            {
+                string query = @"SELECT Stock FROM Products WHERE ProductId = @ProductId;";
+            }
+        }
     }
 }

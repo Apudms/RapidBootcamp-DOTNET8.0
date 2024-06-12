@@ -47,12 +47,6 @@ namespace RapidBootcamp.BackendAPI.Controllers
         {   
             try
             {
-                string lastOrderHeaderId = _order.GetOrderLastHeaderId();
-
-                lastOrderHeaderId = lastOrderHeaderId.Substring(4, 4);
-                int newOrderHeaderId = Convert.ToInt32(lastOrderHeaderId) + 1;
-                string newOrderHeaderIdString = "INV-" + newOrderHeaderId.ToString().PadLeft(4, '0');
-                orderHeader.OrderHeaderId = newOrderHeaderIdString;
                 var result = _order.Add(orderHeader);
                 return Ok(result);
             }

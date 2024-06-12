@@ -8,24 +8,31 @@ namespace RapidBootcamp.BackendAPI.DAL
     {
         private string? _connectionString;
         private readonly IConfiguration _config;
+        private readonly IProduct _product;
         private SqlConnection _connection;
         private SqlCommand _command;
         private SqlDataReader _reader;
 
-        public OrderDetailsDAL(IConfiguration config)
+        public OrderDetailsDAL(IConfiguration config, IProduct product)
         {
             _config = config;
+            _product = product;
             _connectionString = _config.GetConnectionString("ConnStr");
             _connection = new SqlConnection(_connectionString);
         }
 
         public OrderDetail Add(OrderDetail entity)
         {
-            using (TransactionScope scope = new TransactionScope())
+            try
             {
-                try
+                //cek stok apakah masih ada
+                int stock = _product.GetProductStock(entity.ProductId);
+                if (stock < entity.Quantity)
                 {
-                    string query = @"INSERT INTO OrderDetails(
+                    throw new ArgumentException("Stock is not enough");
+                }
+
+                string query = @"INSERT INTO OrderDetails(
                                         OrderHeaderId, 
                                         ProductId, 
                                         Quantity, 
@@ -39,42 +46,33 @@ namespace RapidBootcamp.BackendAPI.DAL
                                      );
                                      SELECT @@identity";
 
-                    _command = new SqlCommand(query, _connection);
-                    _command.Parameters.AddWithValue("@OrderHeaderId", entity.OrderHeaderId);
-                    _command.Parameters.AddWithValue("@ProductId", entity.ProductId);
-                    _command.Parameters.AddWithValue("@Quantity", entity.Quantity);
-                    _command.Parameters.AddWithValue("@Price", entity.Price);
-                    _connection.Open();
+                _command = new SqlCommand(query, _connection);
+                _command.Parameters.AddWithValue("@OrderHeaderId", entity.OrderHeaderId);
+                _command.Parameters.AddWithValue("@ProductId", entity.ProductId);
+                _command.Parameters.AddWithValue("@Quantity", entity.Quantity);
+                _command.Parameters.AddWithValue("@Price", entity.Price);
+                _connection.Open();
 
-                    int id = Convert.ToInt32(_command.ExecuteScalar());
-                    entity.OrderDetailId = id;
+                int id = Convert.ToInt32(_command.ExecuteScalar());
+                entity.OrderDetailId = id;
 
-                    // Update stock di Product
-                    string queryUpdate = @"UPDATE Products SET Stock = Stock - @Quantity
+                // Update stock di Product
+                string queryUpdate = @"UPDATE Products SET Stock = Stock - @Quantity
                                            WHERE ProductId = @ProductId";
 
-                    SqlCommand cmdUpdate = new SqlCommand(queryUpdate, _connection);
-                    cmdUpdate.Parameters.AddWithValue("@Quantity", entity.Quantity);
-                    cmdUpdate.Parameters.AddWithValue("@ProductId", entity.ProductId);
-                    cmdUpdate.ExecuteNonQuery();
-                    scope.Complete();
-                    return entity;
-
-                }
-                catch (SqlException sqlEx)
-                {
-                    throw new ArgumentException(sqlEx.Message);
-                }
-                catch (TransactionException tranEx)
-                {
-                    throw new ArgumentException(tranEx.Message);
-                }
-                finally
-                {
-                    _command.Dispose();
-                    _connection.Close();
-                    scope.Dispose();
-                }
+                SqlCommand cmdUpdate = new SqlCommand(queryUpdate, _connection);
+                cmdUpdate.Parameters.AddWithValue("@Quantity", entity.Quantity);
+                cmdUpdate.Parameters.AddWithValue("@ProductId", entity.ProductId);
+                cmdUpdate.ExecuteNonQuery();
+                return entity;
+            }
+            catch (SqlException sqlEx)
+            {
+                throw new ArgumentException(sqlEx.Message);
+            }
+            finally
+            {
+                _connection.Close();
             }
         }
 
@@ -97,7 +95,7 @@ namespace RapidBootcamp.BackendAPI.DAL
         {
             try
             {
-                string query = @"SELECT * FROM ViewOrderDetail 
+                string query = @"SELECT * FROM ViewTransactionDetail 
                                  WHERE OrderHeaderId=@OrderHeaderId
                                  ORDER BY ProductName ASC";
 
@@ -111,7 +109,6 @@ namespace RapidBootcamp.BackendAPI.DAL
                     while (_reader.Read())
                     {
                         OrderDetail orderDetail = new OrderDetail();
-                        orderDetail.OrderDetailId = Convert.ToInt32(_reader["OrderDetailId"]);
                         orderDetail.OrderHeaderId = _reader["OrderHeaderId"].ToString();
                         orderDetail.ProductId = Convert.ToInt32(_reader["ProductId"]);
                         orderDetail.Product = new Product

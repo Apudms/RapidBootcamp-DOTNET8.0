@@ -21,6 +21,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<ICategory, CategoriesDAL>();
 builder.Services.AddScoped<IProduct, ProductsDAL>();
 builder.Services.AddScoped<IOrderHeader, OrderHeadersDAL>();
+builder.Services.AddScoped<IOrderDetail, OrderDetailsDAL>();
 
 var app = builder.Build();
 

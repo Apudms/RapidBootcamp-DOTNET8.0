@@ -1,47 +1,81 @@
 ﻿using RapidBootcamp.BackendAPI.Models;
 using System.Data.SqlClient;
+using System.Transactions;
 
 namespace RapidBootcamp.BackendAPI.DAL
 {
     public class OrderHeadersDAL : IOrderHeader
     {
         private readonly IConfiguration _config;
+        private readonly IOrderDetail _orderDetail;
         private string? _connectionString;
         private SqlConnection _connection;
         private SqlCommand _command;
         private SqlDataReader _reader;
 
-        public OrderHeadersDAL(IConfiguration config) 
+        public OrderHeadersDAL(IConfiguration config, IOrderDetail orderDetail)
         {
             _config = config;
+            _orderDetail = orderDetail;
             _connectionString = _config.GetConnectionString("ConnStr");
             _connection = new SqlConnection(_connectionString);
         }
 
         public OrderHeader Add(OrderHeader entity)
         {
-            try
+            TransactionManager.ImplicitDistributedTransactions = true;
+            using (TransactionScope scope = new TransactionScope())
             {
-                string query = @"INSERT INTO OrderHeaders(OrderHeaderId, CustomerId, ShippingId)
+                try
+                {
+                    string lastOrderHeaderId = GetOrderLastHeaderId();
+                    lastOrderHeaderId = lastOrderHeaderId.Substring(4, 4);
+                    int newOrderHeaderId = Convert.ToInt32(lastOrderHeaderId) + 1;
+                    string newOrderHeaderIdString = "INV-" + newOrderHeaderId.ToString().PadLeft(4, '0');
+                    entity.OrderHeaderId = newOrderHeaderIdString;
+                    
+                    string query = @"INSERT INTO OrderHeaders(OrderHeaderId, CustomerId, ShippingId)
                                  VALUES(@OrderHeaderId, @CustomerId, @ShippingId);
                                  SELECT @@Identity";
 
-                _command = new SqlCommand(query, _connection);
-                _command.Parameters.AddWithValue("@OrderHeaderId", entity.OrderHeaderId);
-                _command.Parameters.AddWithValue("@CustomerId", entity.CustomerId);
-                _command.Parameters.AddWithValue("@ShippingId", entity.ShippingId);
-                _connection.Open();
-                _command.ExecuteNonQuery();
-                return entity;
-            }
-            catch (SqlException sqlEx)
-            {
-                throw new ArgumentException($"Message Error: {sqlEx.Message}");
-            }
-            finally
-            {
-                _connection.Close();
-                _command.Dispose();
+                    _command = new SqlCommand(query, _connection);
+                    _command.Parameters.AddWithValue("@OrderHeaderId", entity.OrderHeaderId);
+                    _command.Parameters.AddWithValue("@CustomerId", entity.CustomerId);
+                    _command.Parameters.AddWithValue("@ShippingId", entity.ShippingId);
+                    _connection.Open();
+                    _command.ExecuteNonQuery();
+                      
+                    if (entity.OrderDetails != null)
+                    {
+                        foreach (var item in entity.OrderDetails)
+                        {
+                            item.OrderHeaderId = newOrderHeaderIdString;
+                            _orderDetail.Add(item);
+                        }
+                    }
+
+                    scope.Complete();
+
+                    return entity;
+                }
+                catch (TransactionException transEx)
+                {
+                    throw new ArgumentException(transEx.Message);
+                }
+                catch (SqlException sqlEx)
+                {
+                    throw new ArgumentException($"Message Error: {sqlEx.Message}");
+                }
+                catch (Exception ex)
+                {
+                    throw new ArgumentException(ex.Message);
+                }
+                finally
+                {
+                    scope.Dispose();
+                    _command.Dispose();
+                    _connection.Close();
+                }
             }
         }
 
@@ -74,10 +108,6 @@ namespace RapidBootcamp.BackendAPI.DAL
                             {
                                 CustomerId = Convert.ToInt32(_reader["CustomerId"]),
                                 CustomerName = _reader["CustomerName"].ToString(),
-                                Address = _reader["Address"].ToString(),
-                                City = _reader["City"].ToString(),
-                                Email = _reader["Email"].ToString(),
-                                PhoneNumber = _reader["PhoneNumber"].ToString(),
                             },
                             ShippingId = Convert.ToInt32(_reader["ShippingId"]),
                             ShippedBy = new Shipping
@@ -165,7 +195,6 @@ namespace RapidBootcamp.BackendAPI.DAL
             }
             finally
             {
-                _command.Dispose();
                 _connection.Close();
             }
         }
